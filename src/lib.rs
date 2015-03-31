@@ -48,7 +48,7 @@ impl Request {
 
         if !try!(f.lock().map_err(LockError::io_error)) {
             debug!("lock not acquired; conflict");
-            return Err(LockError::conflict());
+            return Err(LockError::Conflict);
         }
 
         debug!("lock acquired");
@@ -164,24 +164,14 @@ impl Lock {
 }
 
 #[derive(Debug)]
-pub struct LockError {
-    pub conflict: bool,
-    pub io: Option<io::Error>,
+pub enum LockError {
+    Conflict,
+    IO(io::Error),
 }
 
 impl LockError {
-    fn conflict() -> LockError {
-        LockError {
-            conflict: true,
-            io: None
-        }
-    }
-
     fn io_error(err: io::Error) -> LockError {
-        LockError {
-            conflict: false,
-            io: Some(err)
-        }
+        LockError::IO(err)
     }
 }
 
